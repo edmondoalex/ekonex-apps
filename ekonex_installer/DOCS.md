@@ -1,4 +1,13 @@
-# Ekonex Installer - Test 0.1.0-test6
+# Ekonex Installer - Test 0.1.0-test7
+
+## Arresto corretto
+
+Gestiti SIGTERM e SIGINT: dopo una migrazione conclusa, Arresta chiude il server
+con codice 0. I log di avvio/arresto riportano data e ora UTC. Non vengono
+modificati diario, backup o dati migrati. Se si arresta durante un lavoro ancora
+attivo, attesa limitata e uscita non riuscita mantengono visibile la necessita
+di recupero: non viene mascherata come completamento. Non arrestare durante la copia.
+Il test della release verifica anche docker stop sul processo nel container.
 
 Candidata di collaudo **banco amd64**, sullo stesso Home Assistant.
 Verifica i formati delle versioni storiche di e-Control (verso0.1.566-dist1),
@@ -11,7 +20,7 @@ La verifica dei dati non equivale al collaudo delle periferiche.
 
 ## Procedura breve
 
-1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test6.
+1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test7.
 2. Mantieni ferme le copie originali e nuove dei prodotti da migrare.
 3. Nella scheda del solo Installer disattiva temporaneamente Modalita protezione,
    poi riavvia Installer. Gli altri add-on mantengono la loro protezione.
