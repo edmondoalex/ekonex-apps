@@ -1,4 +1,9 @@
-# Ekonex Installer - Test 0.1.0-test7
+# Ekonex Installer 0.1.0-test8
+
+Nome semplificato: Ekonex Installer. Rimane Sperimentale; slug e dati invariati,
+nessuna reinstallazione richiesta. Impianto operativo non selezionabile fino al
+completamento futuro. Prima dell'analisi un avviso ricorda di fermare solo le app
+da migrare e le eventuali destinazioni. I blocchi indicano quale app arrestare.
 
 ## Arresto corretto
 
@@ -20,7 +25,7 @@ La verifica dei dati non equivale al collaudo delle periferiche.
 
 ## Procedura breve
 
-1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test7.
+1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test8.
 2. Mantieni ferme le copie originali e nuove dei prodotti da migrare.
 3. Nella scheda del solo Installer disattiva temporaneamente Modalita protezione,
    poi riavvia Installer. Gli altri add-on mantengono la loro protezione.

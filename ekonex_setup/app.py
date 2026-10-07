@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 STATIC = Path(__file__).parent / "static"
 PACKAGE = "ekonex-installer"
-TAG = "0.1.0-test7"
+TAG = "0.1.0-test8"
 INSTALLER = "935e8182_ekonex_installer"
 STORE_INFO = "/store/addons/" + INSTALLER + "/info"
 STORE_INSTALL = "/store/addons/" + INSTALLER + "/install"

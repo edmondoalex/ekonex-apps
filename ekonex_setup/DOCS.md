@@ -1,5 +1,9 @@
 # Ekonex Installer - Avvio
 
+Aggiornamento corrente Avvio0.1.0-test10: destinazione Ekonex Installer0.1.0-test8
+se assente. Nome del migratore senza Test, stato Sperimentale invariato. Per le
+copie gia installate usare Aggiorna nella loro scheda, senza reinstallare.
+
 Avvio0.1.0-test9: gestione SIGTERM/SIGINT e arresto regolare con codice0 quando
 non ci sono operazioni attive; log UTC. Verificato docker stop in CI. Credenziali
 Supervisor e diario installazione invariati. Non arrestare durante salvataggio.
