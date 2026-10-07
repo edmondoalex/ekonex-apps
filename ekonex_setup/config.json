@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer - Avvio",
-  "version": "0.1.0-test1",
+  "version": "0.1.0-test2",
   "slug": "ekonex_setup",
   "description": "Configura e verifica GHCR da zero. Nessuna migrazione o modifica agli altri add-on.",
   "arch": ["amd64"],

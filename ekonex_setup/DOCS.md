@@ -21,8 +21,19 @@ Il token e custodito dal Supervisor nel registro nativo, non in opzioni/file
 dell'add-on. La persistenza si controlla tornando nella UI dopo il riavvio
 dell'add-on e provando l'installazione privata.
 
-Nessuna cancellazione/sostituzione automatica se ghcr.io e gia presente. Non
-eliminare una credenziale funzionante per simulare un primo avvio: usare un
-banco non configurato. Nessun token in chat, URL, screenshot o cartelle condivise.
+## Rinnovo di un token scaduto (0.1.0-test2)
+
+Se ghcr.io e gia presente, inserisci e verifica il nuovo token. Sono verificati
+anche i pacchetti Ekonex privati gia installati, non soltanto Installer.
+Spunta sia la conferma registrazione sia **Sostituisci la credenziale GHCR
+esistente**, poi premi Sostituisci credenziale. La voce viene aggiornata tramite
+Supervisor senza cancellazioni, riavvii o reinstallazioni degli add-on.
+Non revocare il vecchio token ancora valido prima di aver collaudato quello nuovo.
+Se il salvataggio ha esito incerto, rileggi lo stato e prova un download: la sola
+presenza dello stesso nome utente non prova quale token sia memorizzato.
+La lettura nativa non restituisce il vecchio segreto, quindi non e possibile
+promettere rollback automatico della credenziale precedente.
+
+Nessuna cancellazione o sostituzione automatica. Nessun token in chat, URL, screenshot o cartelle condivise.
 Accessi remoti solo HTTPS. Questa versione non migra, installa o arresta prodotti.
 Puoi arrestare Avvio dopo la configurazione; non e necessario lasciarlo in esecuzione.

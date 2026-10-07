@@ -11,7 +11,7 @@ Only amd64 is currently validated for the included releases.
 3. Segui la guida popup per il token classic read:packages, verifica e salva.
 4. Installa **Ekonex Installer - Test** per collaudare il download privato.
 
-Avvio configura soltanto il registro e non sovrascrive una credenziale rilevata.
+Avvio configura il registro e permette di rinnovare una credenziale esistente solo dopo verifica del nuovo token e conferma esplicita di sostituzione. Non riavvia gli add-on.
 Installer - Test esegue solo analisi: la migrazione reale non e ancora abilitata.
 Non disinstallare gli add-on originali per effettuare questa prova.
 Guida completa: [primo avvio](ekonex_setup/DOCS.md).

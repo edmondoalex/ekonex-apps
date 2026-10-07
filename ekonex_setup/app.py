@@ -13,6 +13,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 STATIC = Path(__file__).parent / "static"
 PACKAGE = "ekonex-installer"
 TAG = "0.1.0-test2"
+INSTALLED_PACKAGES = {
+    "e_hdl_buspro_mqtt": "ekonex-econtrol-pilot", "e_face_x4": "ekonex-eface-pilot",
+    "ksenia_lares_addon": "ekonex-esafe", "irrigazione_dashboard_v2": "ekonex-edry",
+    "e_sunmind": "ekonex-esunmind", "e_therm_plus_ks": "ekonex-ethermplus",
+    "e_thermomind": "ekonex-ethermomind", "asterisk_eface": "ekonex-evoip",
+    "energy_core": "ekonex-energycore",
+}
 
 
 class SafeError(Exception):
@@ -46,7 +53,7 @@ class Transport:
             raise SafeError("Verifica non riuscita: controlla connessione, token, scadenza e permessi. Nessun dettaglio sensibile registrato.") from None
 
     def supervisor(self, path, payload=None):
-        allowed = ("/auth/list", "/docker/registries")
+        allowed = ("/auth/list", "/docker/registries", "/addons")
         if path not in allowed or not self._token or (payload is not None and path != "/docker/registries"):
             raise SafeError("Operazione Supervisor non consentita.")
         value, _ = self._request("http://supervisor" + path, "POST" if payload is not None else "GET",
@@ -56,20 +63,22 @@ class Transport:
         return value.get("data", {})
 
     def github(self, path, token):
-        if path not in ("/user", "/users/edmondoalex/packages/container/" + PACKAGE):
+        if path not in ("/user", *("/users/edmondoalex/packages/container/" + p for p in [PACKAGE, *INSTALLED_PACKAGES.values()])):
             raise SafeError("Endpoint GitHub non consentito.")
         return self._request("https://api.github.com" + path, headers={
             "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json",
             "User-Agent": "Ekonex-Installer-Setup"})
 
-    def manifest(self, username, token):
+    def manifest(self, username, token, package=PACKAGE, tag=TAG):
+        if package not in [PACKAGE, *INSTALLED_PACKAGES.values()] or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", tag):
+            raise SafeError("Pacchetto da verificare non valido.")
         basic = base64.b64encode((username + ":" + token).encode()).decode()
-        query = urllib.parse.urlencode({"service": "ghcr.io", "scope": "repository:edmondoalex/" + PACKAGE + ":pull"})
+        query = urllib.parse.urlencode({"service": "ghcr.io", "scope": "repository:edmondoalex/" + package + ":pull"})
         auth, _ = self._request("https://ghcr.io/token?" + query, headers={"Authorization": "Basic " + basic})
         bearer = auth.get("token")
         if not isinstance(bearer, str) or not bearer or len(bearer) > 16384 or any(c.isspace() for c in bearer):
             raise SafeError("GHCR non ha concesso l'accesso al pacchetto di prova.")
-        _, headers = self._request("https://ghcr.io/v2/edmondoalex/" + PACKAGE + "/manifests/" + TAG,
+        _, headers = self._request("https://ghcr.io/v2/edmondoalex/" + package + "/manifests/" + tag,
             method="HEAD", head=True, headers={"Authorization": "Bearer " + bearer,
             "Accept": "application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json,application/vnd.oci.image.index.v1+json"})
         digest = headers.get("docker-content-digest", "")
@@ -106,7 +115,7 @@ class Setup:
                 "username": str(entry.get("username", "")) if isinstance(entry, dict) else ""}
 
     def validate(self, payload):
-        if not isinstance(payload, dict) or set(payload) - {"username", "token", "confirm"}:
+        if not isinstance(payload, dict) or set(payload) - {"username", "token", "confirm", "replace", "expected_username"}:
             raise SafeError("Richiesta non valida.")
         username, token = payload.get("username"), payload.get("token")
         if not isinstance(username, str) or not re.fullmatch(r"[A-Za-z0-9-]{1,39}", username):
@@ -123,9 +132,21 @@ class Setup:
         if package.get("visibility") != "private":
             raise SafeError("Il pacchetto privato di prova non e verificabile.")
         digest = self.transport.manifest(username, token)
+        rows = self.transport.supervisor("/addons").get("addons")
+        if not isinstance(rows, list):
+            raise SafeError("Inventario non leggibile: verifica degli altri pacchetti non possibile.")
+        checked = [PACKAGE + ":" + TAG]
+        for row in rows:
+            slug = str(row.get("slug", ""))
+            short = slug.removeprefix("935e8182_")
+            if not slug.startswith("935e8182_") or short not in INSTALLED_PACKAGES:
+                continue
+            product, version = INSTALLED_PACKAGES[short], str(row.get("version", ""))
+            self.transport.manifest(username, token, product, version)
+            checked.append(product + ":" + version)
         return {"username": username, "manifest_verified": True, "digest": digest,
                 "expiration": headers.get("github-authentication-token-expiration"),
-                "package": PACKAGE + ":" + TAG}
+                "package": PACKAGE + ":" + TAG, "packages_verified": checked}
 
     def check(self, payload):
         if not self.lock.acquire(blocking=False):
@@ -143,10 +164,11 @@ class Setup:
         if not self.lock.acquire(blocking=False):
             raise SafeError("Un controllo e gia in corso.")
         try:
-            if self.registry()["configured"]:
-                raise SafeError("GHCR e gia configurato: questa prova non sostituisce o cancella credenziali esistenti.")
+            before = self.registry()
+            if before["configured"] and (payload.get("replace") is not True or payload.get("expected_username") != before["username"]):
+                raise SafeError("GHCR e gia configurato: verifica il nuovo token e conferma esplicitamente la sostituzione.")
             verified = self.validate(payload)
-            if self.registry()["configured"]:
+            if self.registry() != before:
                 raise SafeError("Il registro e cambiato durante il controllo. Nessuna sostituzione eseguita.")
             try:
                 self.transport.supervisor("/docker/registries", {"ghcr.io": {
@@ -156,8 +178,9 @@ class Setup:
                     raise ValueError()
             except Exception:
                 raise SafeError("Esito salvataggio incerto. Controlla lo stato del registro prima di riprovare; nessuna credenziale e stata cancellata.") from None
-            return {**verified, "registered": True, "supervisor_pull_tested": False,
-                    "message": "Credenziale registrata. Ora installa Ekonex Installer - Test dal catalogo per verificare il download tramite Supervisor."}
+            return {**verified, "registered": True, "replaced": before["configured"], "supervisor_pull_tested": False,
+                    "message": ("Credenziale sostituita e riletta." if before["configured"] else "Credenziale registrata.") +
+                    " Ora installa o aggiorna Ekonex Installer - Test dal catalogo per verificare il download tramite Supervisor."}
         finally:
             self.lock.release()
 
