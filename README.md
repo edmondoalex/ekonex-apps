@@ -9,9 +9,9 @@ Only amd64 is currently validated for the included releases.
 1. Installa **Ekonex Installer - Avvio**: non richiede credenziali GHCR.
 2. Avvialo e apri Interfaccia Web come amministratore, con protezione attiva.
 3. Segui la guida popup per il token classic read:packages, verifica e salva.
-4. Installa **Ekonex Installer - Test** per collaudare il download privato.
+4. Dopo il salvataggio, Avvio installa automaticamente **Ekonex Installer - Test** se assente. Attendi l'esito e apri la sua scheda per avviarlo. Se gia presente resta invariato.
 
-Avvio configura il registro e permette di rinnovare una credenziale esistente solo dopo verifica del nuovo token e conferma esplicita di sostituzione. Non riavvia gli add-on.
+Avvio0.1.0-test3 configura il registro e permette di rinnovare una credenziale esistente solo dopo verifica del nuovo token e conferma esplicita di sostituzione. Installa solo Installer Test2, senza riavviare gli altri add-on o avviare migrazioni. Stato download persistente, nessuna reinstallazione automatica di copie presenti.
 Installer - Test esegue solo analisi: la migrazione reale non e ancora abilitata.
 Non disinstallare gli add-on originali per effettuare questa prova.
 Guida completa: [primo avvio](ekonex_setup/DOCS.md).

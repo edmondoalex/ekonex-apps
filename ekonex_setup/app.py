@@ -1,4 +1,4 @@
-"""Public bootstrap: GHCR credential provisioning only. No migration code."""
+"""Public bootstrap: GHCR provisioning and fixed Installer download. No migration."""
 import base64
 import json
 import os
@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import secrets
 import threading
+import time
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,6 +14,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 STATIC = Path(__file__).parent / "static"
 PACKAGE = "ekonex-installer"
 TAG = "0.1.0-test2"
+INSTALLER = "935e8182_ekonex_installer"
+STORE_INFO = "/store/addons/" + INSTALLER + "/info"
+STORE_INSTALL = "/store/addons/" + INSTALLER + "/install"
 INSTALLED_PACKAGES = {
     "e_hdl_buspro_mqtt": "ekonex-econtrol-pilot", "e_face_x4": "ekonex-eface-pilot",
     "ksenia_lares_addon": "ekonex-esafe", "irrigazione_dashboard_v2": "ekonex-edry",
@@ -53,14 +57,17 @@ class Transport:
             raise SafeError("Verifica non riuscita: controlla connessione, token, scadenza e permessi. Nessun dettaglio sensibile registrato.") from None
 
     def supervisor(self, path, payload=None):
-        allowed = ("/auth/list", "/docker/registries", "/addons")
-        if path not in allowed or not self._token or (payload is not None and path != "/docker/registries"):
+        allowed = ("/auth/list", "/docker/registries", "/addons", "/jobs/info", STORE_INFO, STORE_INSTALL)
+        writable = ("/docker/registries", STORE_INSTALL)
+        if path not in allowed or not self._token or (payload is not None and path not in writable):
             raise SafeError("Operazione Supervisor non consentita.")
+        if path == STORE_INSTALL and payload != {"background": True}:
+            raise SafeError("Installazione non consentita.")
         value, _ = self._request("http://supervisor" + path, "POST" if payload is not None else "GET",
             {"Authorization": "Bearer " + self._token, "Content-Type": "application/json"}, payload)
         if value.get("result") != "ok":
             raise SafeError("Supervisor non ha confermato l'operazione.")
-        return value.get("data", {})
+        return value.get("data") or {}
 
     def github(self, path, token):
         if path not in ("/user", *("/users/edmondoalex/packages/container/" + p for p in [PACKAGE, *INSTALLED_PACKAGES.values()])):
@@ -88,10 +95,108 @@ class Transport:
 
 
 class Setup:
-    def __init__(self, transport=None):
+    def __init__(self, transport=None, state_path=None):
         self.transport = transport or Transport()
         self.csrf = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
+        self.state_path = Path(state_path) if state_path else None
+        self.installation = {"state": "idle"}
+        if self.state_path and self.state_path.exists():
+            try:
+                saved = json.loads(self.state_path.read_text(encoding="utf8"))
+                if saved.get("state") not in ("pending", "installed", "existing", "failed", "uncertain"):
+                    raise ValueError()
+                self.installation = {k: saved[k] for k in ("state", "job_id", "since") if k in saved}
+            except Exception:
+                self.installation = {"state": "uncertain"}
+
+    def _record_installation(self, state, **fields):
+        value = {"state": state, **fields}
+        if self.state_path:
+            temporary = self.state_path.with_suffix(".pending")
+            with temporary.open("w", encoding="utf8") as output:
+                os.chmod(temporary, 0o600)
+                json.dump(value, output)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, self.state_path)
+        self.installation = value
+
+    def _installed(self):
+        rows = self.transport.supervisor("/addons").get("addons")
+        if not isinstance(rows, list):
+            raise SafeError("Inventario non disponibile.")
+        return any(isinstance(row, dict) and row.get("slug") == INSTALLER for row in rows)
+
+    def _begin_installation(self):
+        # Called only after confirmed native registry save, while holding the lock.
+        if self.installation["state"] in ("pending", "uncertain"):
+            return
+        if self._installed():
+            self._record_installation("existing")
+            return
+        info = self.transport.supervisor(STORE_INFO)
+        if (info.get("slug") != INSTALLER or info.get("repository") != "935e8182"
+                or info.get("version_latest") != TAG or info.get("available") is not True):
+            raise SafeError("Catalogo Installer non allineato: aggiorna il catalogo.")
+        # Durable intent before POST. An ambiguous response is never retried automatically.
+        self._record_installation("pending", since=time.time())
+        try:
+            result = self.transport.supervisor(STORE_INSTALL, {"background": True})
+            job = result.get("job_id", "")
+            if job and not re.fullmatch(r"[a-fA-F0-9-]{32,36}", job):
+                raise ValueError()
+            self._record_installation("pending", since=self.installation["since"], job_id=job)
+        except Exception:
+            self._record_installation("uncertain")
+
+    def installation_status(self):
+        if not self.lock.acquire(blocking=False):
+            return {"state": "pending", "message": "Operazione in corso…"}
+        try:
+            state = self.installation["state"]
+            if state != "idle":
+                try:
+                    installed = self._installed()
+                    if state == "pending":
+                        job_id = self.installation.get("job_id")
+                        jobs = self.transport.supervisor("/jobs/info").get("jobs", [])
+                        def find(rows):
+                            for job in rows:
+                                if job.get("uuid") == job_id:
+                                    return job
+                                child = find(job.get("child_jobs", []))
+                                if child:
+                                    return child
+                            return None
+                        job = find(jobs) if job_id else None
+                        if job and job.get("done") is True:
+                            def errors(item):
+                                return bool(item.get("errors")) or any(errors(c) for c in item.get("child_jobs", []))
+                            self._record_installation("failed" if errors(job) else ("installed" if installed else "uncertain"))
+                        elif not job and installed:
+                            self._record_installation("installed")
+                        elif time.time() - self.installation.get("since", 0) > 1800:
+                            self._record_installation("uncertain")
+                    elif installed:
+                        if state not in ("installed", "existing"):
+                            self._record_installation("installed")
+                    elif state in ("installed", "existing"):
+                        self._record_installation("uncertain")
+                except Exception:
+                    return {"state": state, "message": "Stato installazione non verificabile. Nessuna nuova installazione avviata."}
+            state = self.installation["state"]
+            messages = {
+                "idle": "",
+                "pending": "Download e installazione di Ekonex Installer in corso… Puoi riaprire questa pagina senza ripetere il salvataggio.",
+                "installed": "Ekonex Installer installato. Apri la sua scheda e premi Avvia, poi Interfaccia Web. Nessuna migrazione avviata.",
+                "existing": "Ekonex Installer è già installato: nessuna reinstallazione o aggiornamento eseguito.",
+                "failed": "Credenziale salvata, ma installazione non riuscita. Controlla i log Supervisor; gli altri add-on sono invariati.",
+                "uncertain": "Credenziale salvata. Esito installazione da verificare nella scheda Installer: non viene ripetuta automaticamente.",
+            }
+            return {"state": state, "message": messages[state], "installed": state in ("installed", "existing")}
+        finally:
+            self.lock.release()
 
     def admin(self, user_id, username):
         if not user_id or not username:
@@ -178,9 +283,15 @@ class Setup:
                     raise ValueError()
             except Exception:
                 raise SafeError("Esito salvataggio incerto. Controlla lo stato del registro prima di riprovare; nessuna credenziale e stata cancellata.") from None
+            try:
+                self._begin_installation()
+            except Exception:
+                # Never misreport a successful credential save as a failed save.
+                if self.installation["state"] not in ("pending", "uncertain"):
+                    self.installation = {"state": "failed"}
             return {**verified, "registered": True, "replaced": before["configured"], "supervisor_pull_tested": False,
                     "message": ("Credenziale sostituita e riletta." if before["configured"] else "Credenziale registrata.") +
-                    " Ora installa o aggiorna Ekonex Installer - Test dal catalogo per verificare il download tramite Supervisor."}
+                    " Preparazione automatica di Ekonex Installer: segui lo stato qui sotto."}
         finally:
             self.lock.release()
 
@@ -220,7 +331,7 @@ def handler_for(app):
                 return self.send(200, (STATIC / name).read_bytes(), mime)
             if self.path == "/api/status":
                 try:
-                    return self.send(200, {"csrf": app.csrf, "registry": app.registry()})
+                    return self.send(200, {"csrf": app.csrf, "registry": app.registry(), "installation": app.installation_status()})
                 except Exception:
                     return self.send(503, {"error": "Impossibile leggere il registro Supervisor."})
             return self.send(404, {"error": "Pagina non trovata."})
@@ -252,7 +363,7 @@ def handler_for(app):
 
 
 if __name__ == "__main__":
-    server = ThreadingHTTPServer(("0.0.0.0", 8720), handler_for(Setup()))
+    server = ThreadingHTTPServer(("0.0.0.0", 8720), handler_for(Setup(state_path="/data/setup-install.json")))
     server.daemon_threads = True
     print("Ekonex Installer - Avvio: disponibile solo tramite Ingress amministrativo", flush=True)
     server.serve_forever()
