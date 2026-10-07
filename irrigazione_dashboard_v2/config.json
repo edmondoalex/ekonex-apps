@@ -1,0 +1,44 @@
+{
+  "name": "e-Dry Irrigazione",
+  "slug": "irrigazione_dashboard_v2",
+  "version": "10.5.22-dist2",
+  "description": "Dashboard e-Dry irrigazione su porta 1977 (auth none/basic/key + e_dry bind + e-SunMind meteo)",
+  "startup": "services",
+  "boot": "manual",
+  "arch": [
+    "amd64"
+  ],
+  "hassio_api": true,
+  "homeassistant_api": true,
+  "ingress": true,
+  "ingress_port": 1977,
+  "webui": "http://[HOST]:[PORT:1977]",
+  "panel_icon": "mdi:sprinkler-variant",
+  "panel_title": "e-Dry Irrigazione",
+  "panel_admin": false,
+  "ports": {
+    "1977/tcp": 1977,
+    "1978/tcp": 1978
+  },
+  "options": {
+    "auth_mode": "none",
+    "basic_user": "",
+    "basic_pass": "",
+    "access_key": "",
+    "admin_settings_password": "",
+    "bind_config_entry_id": "",
+    "entities_port": 1978,
+    "e_sunmind_api_url": "http://192.168.3.24:1980/api/weather/irrigation"
+  },
+  "schema": {
+    "auth_mode": "list(none|basic|key)",
+    "basic_user": "str?",
+    "basic_pass": "password?",
+    "access_key": "password?",
+    "admin_settings_password": "password?",
+    "bind_config_entry_id": "str?",
+    "entities_port": "int?",
+    "e_sunmind_api_url": "str?"
+  },
+  "image": "ghcr.io/edmondoalex/ekonex-edry"
+}

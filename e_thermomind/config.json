@@ -1,0 +1,58 @@
+{
+  "name": "e-ThermoMind",
+  "slug": "e_thermomind",
+  "description": "PLC termico: orchestrazione ACS/Puffer/Volano/Solare con UI Admin/User (Vue)",
+  "version": "0.8.59-dist2",
+  "arch": [
+    "amd64"
+  ],
+  "init": false,
+  "startup": "services",
+  "boot": "manual",
+  "host_network": true,
+  "homeassistant_api": true,
+  "hassio_api": true,
+  "panel_icon": "mdi:thermostat",
+  "panel_title": "e-ThermoMind",
+  "ingress": true,
+  "ingress_port": 8099,
+  "ports": {
+    "8099/tcp": 8099
+  },
+  "ports_description": {
+    "8099/tcp": "Web UI (ingress/proxy)"
+  },
+  "options": {
+    "log_level": "info",
+    "pdc_enabled": false,
+    "ha_url": "http://homeassistant:8123",
+    "ha_token": "",
+    "mqtt": {
+      "enabled": false,
+      "host": "core-mosquitto",
+      "port": 1883,
+      "username": "",
+      "password": "",
+      "base_topic": "thermomind",
+      "discovery_prefix": "homeassistant",
+      "client_id": "thermomind-addon"
+    }
+  },
+  "schema": {
+    "log_level": "list(trace|debug|info|warning|error)",
+    "pdc_enabled": "bool",
+    "ha_url": "str",
+    "ha_token": "str",
+    "mqtt": {
+      "enabled": "bool",
+      "host": "str",
+      "port": "port",
+      "username": "str?",
+      "password": "password?",
+      "base_topic": "str",
+      "discovery_prefix": "str",
+      "client_id": "str"
+    }
+  },
+  "image": "ghcr.io/edmondoalex/ekonex-ethermomind"
+}
