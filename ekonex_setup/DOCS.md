@@ -1,5 +1,10 @@
 # Ekonex Installer - Avvio
 
+Aggiornamento Avvio0.1.0-test5: installa Installer privato0.1.0-test4 se assente.
+Non aggiorna le copie gia presenti. Installer4 consente collaudo migrazione banco
+con manutenzione esplicita, ma Avvio non abilita privilegi o migrazioni da solo.
+I riferimenti Test2 seguenti descrivono la prima distribuzione storica.
+
 Add-on pubblico di primo avvio: non richiede un token GHCR per installarsi.
 Contiene configurazione credenziali, guida e installazione del solo Installer; nessun codice
 degli add-on Ekonex privati o del loro trasferimento dati.

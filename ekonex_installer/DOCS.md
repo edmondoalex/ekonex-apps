@@ -1,29 +1,60 @@
-# Ekonex Installer - Test 0.1.0-test2
+# Ekonex Installer - Test 0.1.0-test4
 
-Versione sperimentale amd64: analizza gli add-on installati e mostra la guida token.
-NON esegue backup, migrazioni, installazioni, arresti o modifiche alle credenziali.
-Non disinstallare i vecchi add-on per provare questa versione.
+Candidata di collaudo **banco amd64**, sullo stesso Home Assistant.
+Supporta e-Control0.1.393/0.1.566 verso0.1.566-dist1 ed e-Safe5.2.103/5.2.106
+verso5.2.106-dist2. Non abilita gli altri sette prodotti o impianti operativi.
+La verifica dei dati non equivale al collaudo delle periferiche.
 
-## Installazione nel mini PC
+## Procedura breve
 
-1. Se GHCR non e configurato, installare prima **Ekonex Installer - Avvio**:
-   e pubblico e permette di verificare/salvare la prima credenziale con guida popup.
-   Se gia configurato, usare la propria credenziale valida senza cancellarla.
-2. Aggiungere il catalogo https://github.com/edmondoalex/ekonex-apps
-   oppure aggiornarlo se e gia presente.
-3. Cercare Ekonex Installer - Test, installare e avviare.
-4. Aprire Interfaccia Web con un utente Home Assistant amministratore.
-   Lasciare attiva la modalita protezione: non servono privilegi host.
-5. Premere Analizza impianto. Controllare gli slug originali/nuovi e le versioni.
-6. Continua > Guida credenziali apre il popup anche se le versioni sono bloccate.
-   I campi token e il pulsante migrazione rimangono disabilitati intenzionalmente.
+1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test4.
+2. Mantieni ferme le copie originali e nuove dei prodotti da migrare.
+3. Nella scheda del solo Installer disattiva temporaneamente Modalita protezione,
+   poi riavvia Installer. Gli altri add-on mantengono la loro protezione.
+4. Apri Interfaccia Web come amministratore. Analizza impianto, seleziona i prodotti.
+5. Continua > Verifica prerequisiti. Usa GHCR gia configurato da Avvio:
+   non reinserire token. Un registro presente non dimostra che il token sia valido;
+   il download effettivo viene verificato dal Supervisor.
+6. Continua > Conferma. Se una destinazione esiste, conferma separatamente la
+   sostituzione dei suoi dati, che verranno prima salvati.
+7. Avvia migrazione. Il programma crea e rilegge il backup nativo, installa da
+   solo le copie mancanti, trasferisce dati/opzioni/porte e confronta i file.
+8. Attendi il risultato. Scarica il report e conserva anche il backup nativo
+   da Home Assistant fuori dal mini PC. Non disinstallare gli originali.
+9. Arresta Installer e riattiva la sua protezione. Vecchie e nuove copie restano
+   ferme/manuali, senza watchdog o aggiornamenti automatici. Avvio e collaudo
+   delle sole copie nuove sono un passaggio successivo consapevole.
 
-Se compare 401 durante il download, controllare il registro ghcr.io, la scadenza
-del token e i permessi del suo account sul pacchetto ekonex-installer.
-Non inserire password o token in chat o screenshot.
+## Interruzioni ed errori
 
-Se l'interfaccia risponde 403, controllare l'utente amministratore e aprire
-tramite Home Assistant, non direttamente tramite IP/porta.
+Non ripetere l'operazione o eliminare copie. Riapri Installer: il diario resta.
+Durante un errore dopo l'inizio del trasferimento prova il ripristino della
+destinazione, conservando tutte le copie. Dopo un riavvio/interruzione usa il
+pulsante **Ripristina destinazioni**, con la sua conferma; mai ripresa automatica.
+Se compare intervento richiesto, conserva report e backup e non avviare le copie.
+Un'installazione fallita prima della copia non altera i dati originali; eventuali
+nuove copie installate restano disponibili ma ferme.
 
-La prova non qualifica la compatibilita delle vecchie configurazioni e non
-certifica un ripristino. Le operazioni reali arriveranno dopo il collaudo separato.
+I dati originali non vengono cancellati. La procedura non riscrive arbitrariamente
+URL, identificativi MQTT, registri HA o collegamenti salvati: verificare i
+collegamenti tra applicazioni nel successivo collaudo. La configurazione delle
+porte e le opzioni vengono confrontate tramite API Supervisor.
+
+## Accesso di manutenzione
+
+Solo temporaneamente: host PID, SYS_PTRACE, DAC_READ_SEARCH, AppArmor disabilitato,
+socket Docker usato esclusivamente per GET/inspect, backup montato in lettura.
+Niente full_access, shell sul Supervisor, Docker exec/scritture o porte pubbliche.
+Accesso dati limitato agli identificativi e-Control/e-Safe previsti, con ancoraggio
+al processo Supervisor verificato e al volume privato dello stesso Installer.
+Link, file speciali, sorgenti attive e versioni diverse bloccano la copia.
+
+Backup nativo locale non cifrato e copie private contengono le configurazioni,
+quindi possono contenere password degli add-on: custodirli come dati sensibili.
+Il diario privato dell'Installer e in /data/maintenance, protetto0700/0600.
+Non inviarlo in chat; il report scaricabile esclude opzioni e segreti.
+Il token GHCR resta nel registro nativo Supervisor, non nel diario migrazione.
+
+Collaudo eseguito su file sintetici e container Linux isolati, incluse interruzioni,
+ripristino, permessi, volumi e blocco copie attive. Il primo collaudo su questo
+impianto e sulle periferiche reali resta da eseguire. Nessuna garanzia di zero bug.

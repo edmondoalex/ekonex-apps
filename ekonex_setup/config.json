@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer - Avvio",
-  "version": "0.1.0-test4",
+  "version": "0.1.0-test5",
   "slug": "ekonex_setup",
   "description": "Configura GHCR e installa automaticamente Ekonex Installer. Nessuna migrazione automatica.",
   "arch": ["amd64"],
