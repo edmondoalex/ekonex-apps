@@ -1,0 +1,51 @@
+{
+  "name": "Energy Core Dashboard",
+  "slug": "energy_core",
+  "description": "Futuristic realtime energy dashboard reading entities from Home Assistant via WebSocket API.",
+  "version": "0.1.0-dist2",
+  "url": "https://example.local/energy-core",
+  "arch": [
+    "amd64"
+  ],
+  "startup": "services",
+  "init": false,
+  "ingress": false,
+  "panel_icon": "mdi:flash",
+  "ports": {
+    "8099/tcp": 18099
+  },
+  "ports_description": {
+    "8099/tcp": "Energy Core Dashboard (HTTP)"
+  },
+  "map": [
+    "addon_config:rw",
+    "share:ro"
+  ],
+  "options": {
+    "auth_mode": "basic",
+    "basic_user": "admin",
+    "basic_pass": "",
+    "access_key": "",
+    "ha_url": "http://homeassistant:8123",
+    "ha_token": "",
+    "entities": [
+      "sensor.power_house",
+      "sensor.solar_power",
+      "sensor.grid_power",
+      "sensor.battery_soc"
+    ]
+  },
+  "schema": {
+    "auth_mode": "list(none|basic|key)",
+    "basic_user": "str?",
+    "basic_pass": "password?",
+    "access_key": "password?",
+    "ha_url": "str",
+    "ha_token": "password",
+    "entities": [
+      "str"
+    ]
+  },
+  "image": "ghcr.io/edmondoalex/ekonex-energycore",
+  "boot": "manual"
+}
