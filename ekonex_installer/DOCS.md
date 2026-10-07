@@ -1,4 +1,4 @@
-# Ekonex Installer - Test 0.1.0-test5
+# Ekonex Installer - Test 0.1.0-test6
 
 Candidata di collaudo **banco amd64**, sullo stesso Home Assistant.
 Verifica i formati delle versioni storiche di e-Control (verso0.1.566-dist1),
@@ -11,7 +11,7 @@ La verifica dei dati non equivale al collaudo delle periferiche.
 
 ## Procedura breve
 
-1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test5.
+1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test6.
 2. Mantieni ferme le copie originali e nuove dei prodotti da migrare.
 3. Nella scheda del solo Installer disattiva temporaneamente Modalita protezione,
    poi riavvia Installer. Gli altri add-on mantengono la loro protezione.
@@ -30,6 +30,19 @@ La verifica dei dati non equivale al collaudo delle periferiche.
    delle sole copie nuove sono un passaggio successivo consapevole.
 
 ## Interruzioni ed errori
+
+Test6 corregge l'attesa dei job d'installazione eliminati automaticamente dal
+Supervisor: verifica presenza, versione e arresto della destinazione, senza
+dedurre il successo dalla sola scomparsa del job. Un job fallito non viene ignorato.
+
+Per una sessione Test5 ferma dopo il backup, con una nuova copia installata:
+aggiorna soltanto Installer aTest6 (conserva i suoi dati), apri l'interfaccia,
+conferma **Riprendi migrazione**. Il pulsante compare solo per una preparazione
+fallita/interrotta, backup verificato e nessun trasferimento iniziato. Rilegge il
+backup e confronta sorgenti/opzioni prima di proseguire; non reinstalla copie
+gia presenti. Una copia appena installata non ancora salvata deve essere vuota
+tranne options.json: eventuali nuovi dati bloccano la ripresa, non sono cancellati.
+Nessun tentativo automatico se una precedente installazione resta ambigua.
 
 Non ripetere l'operazione o eliminare copie. Riapri Installer: il diario resta.
 Durante un errore dopo l'inizio del trasferimento prova il ripristino della
