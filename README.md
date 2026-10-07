@@ -1,5 +1,7 @@
 # Ekonex Apps
 
+Installer Test0.1.0-test3 corregge l'analisi di identificativi validi contenenti trattini, punti e maiuscole. Avvio0.1.0-test4 installa questa versione quando Installer e assente. Installer gia presente va aggiornato dalla sua scheda; nessuna migrazione reale viene avviata dalla patch.
+
 Home Assistant catalog. Product source and container packages remain private.
 The only public executable code here is the small first-run credential setup tool.
 Only amd64 is currently validated for the included releases.

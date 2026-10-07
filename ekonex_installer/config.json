@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer - Test",
-  "version": "0.1.0-test2",
+  "version": "0.1.0-test3",
   "slug": "ekonex_installer",
   "description": "Analisi e anteprima guidata della migrazione Ekonex. Migrazione reale non ancora abilitata.",
   "arch": ["amd64"],
