@@ -1,0 +1,21 @@
+{
+  "name": "Ekonex Installer - Avvio",
+  "version": "0.1.0-test1",
+  "slug": "ekonex_setup",
+  "description": "Configura e verifica GHCR da zero. Nessuna migrazione o modifica agli altri add-on.",
+  "arch": ["amd64"],
+  "startup": "application",
+  "boot": "manual_only",
+  "init": false,
+  "stage": "experimental",
+  "ingress": true,
+  "ingress_port": 8720,
+  "panel_admin": true,
+  "panel_title": "Ekonex Installer",
+  "panel_icon": "mdi:tools",
+  "hassio_api": true,
+  "hassio_role": "admin",
+  "url": "https://github.com/edmondoalex/ekonex-apps",
+  "options": {},
+  "schema": {}
+}
