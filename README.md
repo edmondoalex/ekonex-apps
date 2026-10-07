@@ -6,13 +6,16 @@ e il piccolo bootstrap ekonex_setup.
 
 ## Credenziali e Installer
 
-1. Installa **Ekonex Installer - Avvio0.1.0-test8**: non richiede GHCR preconfigurato.
+1. Installa **Ekonex Installer - Avvio0.1.0-test9**: non richiede GHCR preconfigurato.
 2. Segui la guida token classic read:packages; verifica e conferma il salvataggio.
    Il rinnovo di un registro esistente richiede conferma separata.
 3. Avvio installa automaticamente **Installer - Test0.1.0-test7** se assente.
    Non aggiorna o reinstalla copie presenti: per queste usa la scheda Installer.
 
 ## Migrazione banco
+
+Avvio test9 corregge anche lo stop del bootstrap: uscita0 a operazioni concluse,
+log con data e ora UTC. Non occorre reinserire token o ripetere migrazioni.
 
 Test7 corregge la chiusura dell'Installer: Arresta termina con codice 0 quando
 non ci sono lavori attivi. Log avvio/arresto con data e ora UTC. Nessun dato

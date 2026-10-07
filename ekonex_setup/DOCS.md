@@ -1,5 +1,10 @@
 # Ekonex Installer - Avvio
 
+Avvio0.1.0-test9: gestione SIGTERM/SIGINT e arresto regolare con codice0 quando
+non ci sono operazioni attive; log UTC. Verificato docker stop in CI. Credenziali
+Supervisor e diario installazione invariati. Non arrestare durante salvataggio.
+Installer privato resta0.1.0-test7; non vengono aggiornate copie gia presenti.
+
 Aggiornamento Avvio0.1.0-test7: installa Installer privato0.1.0-test6 se assente.
 Non aggiorna le copie gia presenti. Installer4 consente collaudo migrazione banco
 con manutenzione esplicita, ma Avvio non abilita privilegi o migrazioni da solo.

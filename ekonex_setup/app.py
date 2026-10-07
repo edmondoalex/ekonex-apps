@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import re
 import secrets
+import signal
+from datetime import datetime, timezone
 import threading
 import time
 import urllib.parse
@@ -99,6 +101,7 @@ class Setup:
         self.transport = transport or Transport()
         self.csrf = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
+        self.stopping = False
         self.state_path = Path(state_path) if state_path else None
         self.installation = {"state": "idle"}
         if self.state_path and self.state_path.exists():
@@ -257,6 +260,8 @@ class Setup:
         if not self.lock.acquire(blocking=False):
             raise SafeError("Un controllo e gia in corso.")
         try:
+            if self.stopping:
+                raise SafeError("Avvio in arresto.")
             result = self.validate(payload)
             result["registry"] = self.registry()
             return result
@@ -269,6 +274,8 @@ class Setup:
         if not self.lock.acquire(blocking=False):
             raise SafeError("Un controllo e gia in corso.")
         try:
+            if self.stopping:
+                raise SafeError("Avvio in arresto.")
             before = self.registry()
             if before["configured"] and (payload.get("replace") is not True or payload.get("expected_username") != before["username"]):
                 raise SafeError("GHCR e gia configurato: verifica il nuovo token e conferma esplicitamente la sostituzione.")
@@ -362,8 +369,44 @@ def handler_for(app):
     return Handler
 
 
+def lifecycle_log(message):
+    stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    print(f"{stamp} Ekonex Installer - Avvio: {message}", flush=True)
+
+
+def serve(server, app, stop_timeout=5):
+    stopping = False
+
+    def request_stop(signum, frame):
+        nonlocal stopping
+        stopping = True
+
+    previous = {sig: signal.signal(sig, request_stop)
+                for sig in (signal.SIGTERM, signal.SIGINT)}
+    server.timeout = 0.25
+    drained = False
+    try:
+        lifecycle_log("Disponibile solo tramite Ingress amministrativo.")
+        while not stopping:
+            server.handle_request()
+    finally:
+        app.stopping = True
+        server.server_close()
+        lifecycle_log("Arresto richiesto; nuove operazioni bloccate.")
+        drained = app.lock.acquire(timeout=stop_timeout)
+        if drained:
+            app.lock.release()
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+    if not drained:
+        lifecycle_log("Operazione ancora attiva: verificare esito al prossimo avvio; uscita 1.")
+        return 1
+    lifecycle_log("Arresto completato correttamente; uscita 0.")
+    return 0
+
+
 if __name__ == "__main__":
-    server = ThreadingHTTPServer(("0.0.0.0", 8720), handler_for(Setup(state_path="/data/setup-install.json")))
+    app = Setup(state_path="/data/setup-install.json")
+    server = ThreadingHTTPServer(("0.0.0.0", 8720), handler_for(app))
     server.daemon_threads = True
-    print("Ekonex Installer - Avvio: disponibile solo tramite Ingress amministrativo", flush=True)
-    server.serve_forever()
+    raise SystemExit(serve(server, app))
