@@ -6,16 +6,19 @@ e il piccolo bootstrap ekonex_setup.
 
 ## Credenziali e Installer
 
-1. Installa **Ekonex Installer - Avvio0.1.0-test5**: non richiede GHCR preconfigurato.
+1. Installa **Ekonex Installer - Avvio0.1.0-test6**: non richiede GHCR preconfigurato.
 2. Segui la guida token classic read:packages; verifica e conferma il salvataggio.
    Il rinnovo di un registro esistente richiede conferma separata.
-3. Avvio installa automaticamente **Installer - Test0.1.0-test4** se assente.
+3. Avvio installa automaticamente **Installer - Test0.1.0-test5** se assente.
    Non aggiorna o reinstalla copie presenti: per queste usa la scheda Installer.
 
 ## Migrazione banco
 
-Installer Test4 abilita solo collaudo banco e-Control/e-Safe nelle versioni
-specificate nella [guida](ekonex_installer/DOCS.md). Backup nativo verificato,
+Installer Test5 abilita il collaudo banco e-Control/eFace/e-Safe con verifica
+dei formati dati storici, senza liste chiuse di versioni. Include e-Control0.1.469
+ed eFace2.21.328. Restano esclusi downgrade e formati non riconosciuti;
+la selezione non attesta da sola la compatibilita. Vedi la [guida](ekonex_installer/DOCS.md).
+Backup nativo verificato,
 installazione delle copie mancanti, trasferimento dati e ripristino.
 Richiede manutenzione temporanea del solo Installer: protezione disattivata
 e riavvio prima della verifica prerequisiti, da riattivare dopo il collaudo.

@@ -1,6 +1,6 @@
 # Ekonex Installer - Avvio
 
-Aggiornamento Avvio0.1.0-test5: installa Installer privato0.1.0-test4 se assente.
+Aggiornamento Avvio0.1.0-test6: installa Installer privato0.1.0-test5 se assente.
 Non aggiorna le copie gia presenti. Installer4 consente collaudo migrazione banco
 con manutenzione esplicita, ma Avvio non abilita privilegi o migrazioni da solo.
 I riferimenti Test2 seguenti descrivono la prima distribuzione storica.

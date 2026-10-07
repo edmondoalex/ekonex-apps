@@ -1,13 +1,17 @@
-# Ekonex Installer - Test 0.1.0-test4
+# Ekonex Installer - Test 0.1.0-test5
 
 Candidata di collaudo **banco amd64**, sullo stesso Home Assistant.
-Supporta e-Control0.1.393/0.1.566 verso0.1.566-dist1 ed e-Safe5.2.103/5.2.106
-verso5.2.106-dist2. Non abilita gli altri sette prodotti o impianti operativi.
+Verifica i formati delle versioni storiche di e-Control (verso0.1.566-dist1),
+eFace (verso2.21.328-dist1) ed e-Safe (verso5.2.106-dist2), senza una lista chiusa
+dei numeri di versione. Include e-Control0.1.469 ed eFace2.21.328. Le caselle
+consentono la verifica: non attestano gia la compatibilita dei dati specifici.
+Versioni non ordinabili e downgrade restano esclusi; formati non riconosciuti
+sono segnalati prima della copia. Non abilita gli altri sei prodotti o impianti operativi.
 La verifica dei dati non equivale al collaudo delle periferiche.
 
 ## Procedura breve
 
-1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test4.
+1. Aggiorna il catalogo Ekonex Apps e Installer alla0.1.0-test5.
 2. Mantieni ferme le copie originali e nuove dei prodotti da migrare.
 3. Nella scheda del solo Installer disattiva temporaneamente Modalita protezione,
    poi riavvia Installer. Gli altri add-on mantengono la loro protezione.
@@ -45,9 +49,9 @@ porte e le opzioni vengono confrontate tramite API Supervisor.
 Solo temporaneamente: host PID, SYS_PTRACE, DAC_READ_SEARCH, AppArmor disabilitato,
 socket Docker usato esclusivamente per GET/inspect, backup montato in lettura.
 Niente full_access, shell sul Supervisor, Docker exec/scritture o porte pubbliche.
-Accesso dati limitato agli identificativi e-Control/e-Safe previsti, con ancoraggio
+Accesso dati limitato agli identificativi e-Control/eFace/e-Safe previsti, con ancoraggio
 al processo Supervisor verificato e al volume privato dello stesso Installer.
-Link, file speciali, sorgenti attive e versioni diverse bloccano la copia.
+Link, file speciali, sorgenti attive e versioni cambiate dopo l'analisi bloccano la copia.
 
 Backup nativo locale non cifrato e copie private contengono le configurazioni,
 quindi possono contenere password degli add-on: custodirli come dati sensibili.

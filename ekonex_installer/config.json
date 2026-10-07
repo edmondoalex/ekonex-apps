@@ -1,8 +1,8 @@
 {
   "name": "Ekonex Installer - Test",
-  "version": "0.1.0-test4",
+  "version": "0.1.0-test5",
   "slug": "ekonex_installer",
-  "description": "Migrazione banco e-Control/e-Safe con backup, installazione, verifica dati e recupero. Copie mantenute ferme.",
+  "description": "Migrazione banco e-Control/eFace/e-Safe con verifica formati legacy, backup e recupero. Copie mantenute ferme.",
   "arch": ["amd64"],
   "startup": "application",
   "boot": "manual_only",
