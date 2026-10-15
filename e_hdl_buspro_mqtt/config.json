@@ -54,7 +54,9 @@
       "ksenia_username": "",
       "ksenia_password": "",
       "ksenia_client_id": "buspro-addon-ksenia-smarthome"
-    }
+    },
+    "ekonex_installer_url": "http://935e8182-ekonex-installer:8719",
+    "component_api_key": ""
   },
   "schema": {
     "gateway_host": "str",
@@ -94,7 +96,9 @@
       "ksenia_username": "str?",
       "ksenia_password": "password?",
       "ksenia_client_id": "str?"
-    }
+    },
+    "ekonex_installer_url": "str",
+    "component_api_key": "password?"
   },
   "webui": "http://[HOST]:[PORT:8124]",
   "build_from": {
