@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer",
-  "version": "0.1.0-test10",
+  "version": "0.1.0-test11",
   "slug": "ekonex_installer",
   "description": "Migrazione banco e-Control/eFace/e-Safe con verifica formati legacy, backup e recupero. Copie mantenute ferme.",
   "arch": ["amd64"],
@@ -18,10 +18,10 @@
   "docker_api": true,
   "privileged": ["SYS_PTRACE", "DAC_READ_SEARCH"],
   "apparmor": false,
-  "map": [{"type": "backup", "read_only": true}],
+  "map": [{"type": "backup", "read_only": true}, {"type": "homeassistant_config", "path": "/homeassistant", "read_only": true}],
   "stage": "experimental",
   "url": "https://github.com/edmondoalex/ekonex-installer",
   "image": "ghcr.io/edmondoalex/ekonex-installer",
-  "options": {},
-  "schema": {}
+  "options": {"component_api_key": ""},
+  "schema": {"component_api_key": "password"}
 }
