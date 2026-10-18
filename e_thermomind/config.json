@@ -2,7 +2,7 @@
     "name":  "e-ThermoMind",
     "slug":  "e_thermomind",
     "description":  "PLC termico: orchestrazione ACS/Puffer/Volano/Solare con UI Admin/User (Vue)",
-    "version":  "0.8.74-dist1",
+    "version":  "0.8.75-dist1",
     "arch":  [
                  "amd64"
              ],
