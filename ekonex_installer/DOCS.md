@@ -1,5 +1,19 @@
 # Ekonex Installer
 
+## Dahua Access Reader 4.0.0 - test53
+
+Installer `0.1.0-test53` include il pacchetto qualificato Dahua Access Reader
+`4.0.0`. La prova cambia soltanto la versione del Driver, non le sue funzioni.
+Sono preservate le sorgenti precedentemente qualificate e il rollback specifico
+di ogni job. Un vecchio job non puo adottare una nuova versione senza consenso:
+se incompatibile viene fermato con stato di recupero esplicito.
+
+Aggiornare l'App Installer, poi aprire Dahua Access Reader nella sezione Driver.
+**Aggiorna Driver** apre il flusso di verifica, backup e consenso; il successivo
+riavvio riguarda Home Assistant Core e richiede conferma separata.
+Seguire la [guida](../RELEASE_DAHUA_ACCESS_4_2026-10-21.md).
+Le protezioni Alexa della test52 restano invariate.
+
 ## Integrazioni Ekonex e protezione Alexa - test52
 
 Installer `0.1.0-test52` riconosce e-Face `2.21.390-dist1` qualificata,

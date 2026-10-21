@@ -1,5 +1,14 @@
 # Ekonex Apps
 
+## Dahua Access Reader 4.0.0 - 21 ottobre 2026
+
+Installer `0.1.0-test53` rende disponibile il Driver Dahua Access Reader
+`4.0.0`, aggiornamento di prova senza nuove funzioni. Aggiornare prima
+l'App Installer, poi aprire il dettaglio del Driver e premere **Aggiorna Driver**.
+Backup e consenso sono obbligatori; il riavvio di Home Assistant Core
+richiede una conferma separata. Nessun aggiornamento Driver parte automaticamente.
+Vedere la [procedura completa](RELEASE_DAHUA_ACCESS_4_2026-10-21.md).
+
 ## Aggiornamento Alexa - 21 ottobre 2026
 
 e-Face `2.21.390-dist1` e Installer `0.1.0-test52`: correzione packaging
