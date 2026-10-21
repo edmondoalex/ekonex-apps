@@ -1,5 +1,12 @@
 # Ekonex Apps
 
+## Cache pagine e sinottico mobile
+
+e-Control **0.1.672-dist1** impedisce il riuso delle vecchie pagine HTML dal menu.
+e-Face **2.21.391-dist1** mantiene i collegamenti animati fuori dalle schede
+del sinottico mobile e corregge icona, slider e struttura form SIP.
+Nessuna modifica alla logica riscaldamento. Installazioni manuali.
+
 ## Associazione da e-Control e aggiornamento guidato
 
 Aggiornare prima **Installer0.1.0-test54**, poi **e-Control0.1.671-dist1**.
