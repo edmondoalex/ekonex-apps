@@ -1,5 +1,12 @@
 # Ekonex Apps
 
+## Aggiornamento Alexa - 21 ottobre 2026
+
+e-Face `2.21.390-dist1` e Installer `0.1.0-test51`: correzione packaging
+ownership e compatibilita della migrazione Alexa. Seguire la
+[procedura manuale](RELEASE_ALEXA_2026-10-21.md); nessuna migrazione automatica.
+Le note delle versioni precedenti sotto restano come storico.
+
 Catalogo Home Assistant Ekonex, architettura amd64.
 Codice e pacchetti dei prodotti restano privati. L'unico codice eseguibile pubblico
 e il piccolo bootstrap ekonex_setup.

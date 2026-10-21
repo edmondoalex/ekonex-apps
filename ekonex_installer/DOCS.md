@@ -1,4 +1,20 @@
-# Ekonex Installer 0.1.0-test8
+# Ekonex Installer
+
+## Integrazioni Ekonex e protezione Alexa - test51
+
+Installer `0.1.0-test51` riconosce e-Face `2.21.390-dist1` qualificata,
+oltre alla precedente378. Aggiorna prima e-Face e poi Installer, senza
+disinstallare o cancellare dati, quindi ripeti il preflight Alexa da e-Control.
+
+Segui la [procedura manuale coordinata](../RELEASE_ALEXA_2026-10-21.md).
+Il backup del job e il riavvio con conferma separata restano obbligatori.
+L'aggiornamento dell'App Installer non avvia migrazioni dei Driver.
+
+La389 resta bloccata: non forzare il controllo, non fare downgrade e non
+fermare il companion per aggirare il requisito. Le note banco seguenti
+descrivono un percorso storico distinto, non la migrazione Driver Alexa.
+
+## Storico banco 0.1.0-test8
 
 Nome semplificato: Ekonex Installer. Rimane Sperimentale; slug e dati invariati,
 nessuna reinstallazione richiesta. Impianto operativo non selezionabile fino al
