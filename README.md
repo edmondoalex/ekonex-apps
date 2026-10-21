@@ -1,5 +1,14 @@
 # Ekonex Apps
 
+## Correzione aggiornamenti Driver - e-Control 0.1.670-dist1
+
+Aggiornare e-Control per avere **Aggiorna Driver** direttamente nella scheda
+dell'elenco e distinguere gli aggiornamenti EKONEX dalle migrazioni HACS.
+Corretta anche la verifica delle nuove versioni rispetto al catalogo Installer.
+Per Dahua Access Reader 4.0.0 servono Installer53 ed e-Control670;
+nessun aggiornamento Driver parte automaticamente.
+Seguire la [procedura corretta](RELEASE_DRIVER_UPDATE_UI_2026-10-21.md).
+
 ## Dahua Access Reader 4.0.0 - 21 ottobre 2026
 
 Installer `0.1.0-test53` rende disponibile il Driver Dahua Access Reader

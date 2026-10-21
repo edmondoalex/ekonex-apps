@@ -4,7 +4,9 @@ Questa versione serve a provare il flusso di aggiornamento Driver: nessuna
 nuova funzione del lettore, configurazioni e registri conservati.
 
 1. Aggiorna il catalogo App e installa **Ekonex Installer 0.1.0-test53**.
-2. Riapri e-Control, vai in **Driver Ekonex** e apri **Dahua Access Reader**.
+2. Aggiorna anche **e-Control a 0.1.670-dist1**: corregge il pulsante mancante
+   nell'elenco Driver e la verifica del target. Poi riapri e-Control,
+   vai in **Driver Ekonex** e apri **Dahua Access Reader**.
 3. Verifica versione disponibile **4.0.0** e premi **Aggiorna Driver**.
 4. Premi **Verifica aggiornamento, backup e licenza** e controlla l'esito.
 5. Spunta il consenso e premi **Aggiorna con Ekonex**.
