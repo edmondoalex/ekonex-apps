@@ -1,10 +1,14 @@
 # Ekonex Installer
 
-## Integrazioni Ekonex e protezione Alexa - test51
+## Integrazioni Ekonex e protezione Alexa - test52
 
-Installer `0.1.0-test51` riconosce e-Face `2.21.390-dist1` qualificata,
+Installer `0.1.0-test52` riconosce e-Face `2.21.390-dist1` qualificata,
 oltre alla precedente378. Aggiorna prima e-Face e poi Installer, senza
 disinstallare o cancellare dati, quindi ripeti il preflight Alexa da e-Control.
+
+La52 riconosce anche la precisa variante del manifest Alexa1.1.0 con fine riga
+Windows distribuita da e-Face390, senza riscrivere i file durante la verifica.
+Se e-Face390 e gia installata, basta aggiornare Installer e ricaricare la pagina.
 
 Segui la [procedura manuale coordinata](../RELEASE_ALEXA_2026-10-21.md).
 Il backup del job e il riavvio con conferma separata restano obbligatori.
