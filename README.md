@@ -1,5 +1,13 @@
 # Ekonex Apps
 
+## Associazione da e-Control e aggiornamento guidato
+
+Aggiornare prima **Installer0.1.0-test54**, poi **e-Control0.1.671-dist1**.
+L'amministratore puo associare l'impianto direttamente da e-Control, senza
+aprire Installer o copiare codici. Menu laterale condiviso e flusso aggiornamento
+compatto con verifica, consenso e riavvio separato.
+Procedura e limiti: [associazione e aggiornamenti](RELEASE_PAIRING_UX_2026-10-21.md).
+
 ## Correzione aggiornamenti Driver - e-Control 0.1.670-dist1
 
 Aggiornare e-Control per avere **Aggiorna Driver** direttamente nella scheda
