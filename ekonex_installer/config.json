@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer",
-  "version": "0.1.0-test59",
+  "version": "0.1.0-test60",
   "slug": "ekonex_installer",
   "description": "Gestione configurazione e migrazione Ekonex con verifica formati legacy, backup, ripresa e recupero.",
   "arch": [
