@@ -1,50 +1,50 @@
 {
-  "name": "Ekonex Installer",
-  "version": "0.1.0-test54",
-  "slug": "ekonex_installer",
-  "description": "Gestione configurazione e migrazione Ekonex con verifica formati legacy, backup, ripresa e recupero.",
-  "arch": [
-    "amd64"
-  ],
-  "startup": "application",
-  "boot": "manual_only",
-  "init": false,
-  "stdin": true,
-  "ingress": true,
-  "ingress_port": 8719,
-  "panel_title": "Ekonex Installer",
-  "panel_icon": "mdi:package-up",
-  "panel_admin": true,
-  "hassio_api": true,
-  "homeassistant_api": true,
-  "hassio_role": "admin",
-  "host_pid": true,
-  "docker_api": true,
-  "privileged": [
-    "SYS_PTRACE",
-    "DAC_READ_SEARCH"
-  ],
-  "apparmor": false,
-  "map": [
-    {
-      "type": "backup",
-      "read_only": true
-    },
-    {
-      "type": "homeassistant_config",
-      "path": "/homeassistant",
-      "read_only": false
-    }
-  ],
-  "stage": "experimental",
-  "url": "https://github.com/edmondoalex/ekonex-installer",
-  "image": "ghcr.io/edmondoalex/ekonex-installer",
-  "options": {
-    "component_api_key": "",
-    "previous_component_api_key": ""
-  },
-  "schema": {
-    "component_api_key": "password",
-    "previous_component_api_key": "password?"
-  }
+    "name":  "Ekonex Installer",
+    "version":  "0.1.0-test55",
+    "slug":  "ekonex_installer",
+    "description":  "Gestione configurazione e migrazione Ekonex con verifica formati legacy, backup, ripresa e recupero.",
+    "arch":  [
+                 "amd64"
+             ],
+    "startup":  "application",
+    "boot":  "auto",
+    "init":  false,
+    "stdin":  true,
+    "ingress":  true,
+    "ingress_port":  8719,
+    "panel_title":  "Ekonex Installer",
+    "panel_icon":  "mdi:package-up",
+    "panel_admin":  true,
+    "hassio_api":  true,
+    "homeassistant_api":  true,
+    "hassio_role":  "admin",
+    "host_pid":  true,
+    "docker_api":  true,
+    "privileged":  [
+                       "SYS_PTRACE",
+                       "DAC_READ_SEARCH"
+                   ],
+    "apparmor":  false,
+    "map":  [
+                {
+                    "type":  "backup",
+                    "read_only":  true
+                },
+                {
+                    "type":  "homeassistant_config",
+                    "path":  "/homeassistant",
+                    "read_only":  false
+                }
+            ],
+    "stage":  "experimental",
+    "url":  "https://github.com/edmondoalex/ekonex-installer",
+    "image":  "ghcr.io/edmondoalex/ekonex-installer",
+    "options":  {
+                    "component_api_key":  "",
+                    "previous_component_api_key":  ""
+                },
+    "schema":  {
+                   "component_api_key":  "password",
+                   "previous_component_api_key":  "password?"
+               }
 }
