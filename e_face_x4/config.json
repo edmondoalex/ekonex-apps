@@ -1,6 +1,6 @@
 {
   "name": "e-Face X4",
-  "version": "2.21.395-dist1",
+  "version": "2.21.397-dist1",
   "slug": "e_face_x4",
   "description": "Interfaccia unificata per gli add-on e-Konex",
   "url": "https://github.com/edmondoalex/e-Face-X4",
@@ -125,5 +125,6 @@
       "base_url": "str?"
     }
   },
-  "image": "ghcr.io/edmondoalex/ekonex-eface-pilot"
+  "image": "ghcr.io/edmondoalex/ekonex-eface-pilot",
+  "stdin": true
 }
