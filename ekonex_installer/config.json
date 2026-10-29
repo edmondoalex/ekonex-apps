@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer",
-  "version": "0.1.0-test74-dist57",
+  "version": "0.1.0-test74-dist58",
   "slug": "ekonex_installer",
   "description": "Gestione configurazione e migrazione Ekonex con verifica formati legacy, backup, ripresa e recupero.",
   "arch": [
@@ -33,6 +33,10 @@
     {
       "type": "homeassistant_config",
       "path": "/homeassistant",
+      "read_only": false
+    },
+    {
+      "type": "share",
       "read_only": false
     }
   ],
