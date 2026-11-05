@@ -2,7 +2,7 @@
   "name": "e-SunMind",
   "slug": "e_sunmind",
   "description": "Dati sole/luna con ricerca localita, UI web e publish entita in e-Control",
-  "version": "0.3.327-dist2",
+  "version": "0.3.329-dist1",
   "arch": [
     "amd64"
   ],
@@ -55,6 +55,15 @@
       "declination": 30,
       "azimuth": 0,
       "kwp": 6.0
+    },
+    "solcast": {
+      "enabled": false,
+      "api_key": "",
+      "display_mode": "separate",
+      "refresh_rounds_per_utc_day": 4,
+      "daily_request_limit": 10,
+      "cache_stale_hours": 18,
+      "timeout_seconds": 15
     },
     "weather": {
       "enabled": true,
@@ -172,6 +181,15 @@
       "azimuth": "int(-180,180)",
       "kwp": "float(0.1,1000)"
     },
+    "solcast": {
+      "enabled": "bool",
+      "api_key": "password?",
+      "display_mode": "list(separate|total|both)",
+      "refresh_rounds_per_utc_day": "int(1,4)",
+      "daily_request_limit": "int(1,10)",
+      "cache_stale_hours": "int(1,168)",
+      "timeout_seconds": "int(3,60)"
+    },
     "weather": {
       "enabled": "bool",
       "provider": "list(met|open_meteo|hybrid)"
@@ -262,6 +280,9 @@
           "id": "str?",
           "name": "str?",
           "enabled": "bool?",
+          "solcast_enabled": "bool?",
+          "solcast_resource_id": "str?",
+          "solcast_color": "str?",
           "theme": "list(classic_flow|technical_dark|minimal_light)?",
           "dashboard_background_color": "str?",
           "show_sankey": "bool?",
