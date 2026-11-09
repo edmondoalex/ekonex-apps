@@ -2,7 +2,7 @@
   "name": "e-SunMind",
   "slug": "e_sunmind",
   "description": "Dati sole/luna con ricerca localita, UI web e publish entita in e-Control",
-  "version": "0.3.333-dist1",
+  "version": "0.3.334-dist1",
   "arch": [
     "amd64"
   ],
