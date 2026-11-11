@@ -20,6 +20,11 @@ INSTALLER_REPOSITORY = "935e8182"
 INSTALLER_IMAGE = "ghcr.io/edmondoalex/ekonex-installer"
 STORE_INFO = "/store/addons/" + INSTALLER + "/info"
 STORE_INSTALL = "/store/addons/" + INSTALLER + "/install"
+ECONTROL = "935e8182_e_hdl_buspro_mqtt"
+ECONTROL_REPOSITORY = "935e8182"
+ECONTROL_IMAGE = "ghcr.io/edmondoalex/ekonex-econtrol-pilot"
+ECONTROL_STORE_INFO = "/store/addons/" + ECONTROL + "/info"
+ECONTROL_STORE_INSTALL = "/store/addons/" + ECONTROL + "/install"
 INSTALLED_PACKAGES = {
     "e_hdl_buspro_mqtt": "ekonex-econtrol-pilot", "e_face_x4": "ekonex-eface-pilot",
     "ksenia_lares_addon": "ekonex-esafe", "irrigazione_dashboard_v2": "ekonex-edry",
@@ -60,11 +65,12 @@ class Transport:
             raise SafeError("Verifica non riuscita: controlla connessione, token, scadenza e permessi. Nessun dettaglio sensibile registrato.") from None
 
     def supervisor(self, path, payload=None):
-        allowed = ("/auth/list", "/docker/registries", "/addons", "/jobs/info", STORE_INFO, STORE_INSTALL)
-        writable = ("/docker/registries", STORE_INSTALL)
+        allowed = ("/auth/list", "/docker/registries", "/addons", "/jobs/info", STORE_INFO, STORE_INSTALL,
+                   ECONTROL_STORE_INFO, ECONTROL_STORE_INSTALL)
+        writable = ("/docker/registries", STORE_INSTALL, ECONTROL_STORE_INSTALL)
         if path not in allowed or not self._token or (payload is not None and path not in writable):
             raise SafeError("Operazione Supervisor non consentita.")
-        if path == STORE_INSTALL and payload != {"background": True}:
+        if path in (STORE_INSTALL, ECONTROL_STORE_INSTALL) and payload != {"background": True}:
             raise SafeError("Installazione non consentita.")
         value, _ = self._request("http://supervisor" + path, "POST" if payload is not None else "GET",
             {"Authorization": "Bearer " + self._token, "Content-Type": "application/json"}, payload)
@@ -98,7 +104,7 @@ class Transport:
 
 
 class Setup:
-    def __init__(self, transport=None, state_path=None):
+    def __init__(self, transport=None, state_path=None, econtrol_state_path=None):
         self.transport = transport or Transport()
         self.csrf = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
@@ -113,6 +119,16 @@ class Setup:
                 self.installation = {k: saved[k] for k in ("state", "job_id", "since") if k in saved}
             except Exception:
                 self.installation = {"state": "uncertain"}
+        self.econtrol_state_path = Path(econtrol_state_path) if econtrol_state_path else None
+        self.econtrol_installation = {"state": "idle"}
+        if self.econtrol_state_path and self.econtrol_state_path.exists():
+            try:
+                saved = json.loads(self.econtrol_state_path.read_text(encoding="utf8"))
+                if saved.get("state") not in ("pending", "installed", "existing", "failed", "uncertain"):
+                    raise ValueError()
+                self.econtrol_installation = {k: saved[k] for k in ("state", "job_id", "since", "version") if k in saved}
+            except Exception:
+                self.econtrol_installation = {"state": "uncertain"}
 
     def _record_installation(self, state, **fields):
         value = {"state": state, **fields}
@@ -131,6 +147,108 @@ class Setup:
         if not isinstance(rows, list):
             raise SafeError("Inventario non disponibile.")
         return any(isinstance(row, dict) and row.get("slug") == INSTALLER for row in rows)
+
+    def _econtrol_installed(self):
+        rows = self.transport.supervisor("/addons").get("addons")
+        if not isinstance(rows, list):
+            raise SafeError("Inventario non disponibile.")
+        return next((row for row in rows if isinstance(row, dict) and row.get("slug") == ECONTROL), None)
+
+    def _econtrol_catalog(self):
+        info = self.transport.supervisor(ECONTROL_STORE_INFO)
+        version = info.get("version_latest")
+        image = info.get("image")
+        if (info.get("slug") != ECONTROL or str(info.get("repository")) != ECONTROL_REPOSITORY
+                or info.get("available") is not True or not isinstance(version, str)
+                or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", version)
+                or image not in (None, "", ECONTROL_IMAGE)):
+            raise SafeError("Catalogo e-Control non autorizzato o non disponibile: aggiorna il catalogo.")
+        return {"version": version, "image": image or ECONTROL_IMAGE}
+
+    def _record_econtrol(self, state, **fields):
+        value = {"state": state, **fields}
+        if self.econtrol_state_path:
+            temporary = self.econtrol_state_path.with_suffix(".pending")
+            with temporary.open("w", encoding="utf8") as output:
+                os.chmod(temporary, 0o600)
+                json.dump(value, output)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, self.econtrol_state_path)
+        self.econtrol_installation = value
+
+    def install_econtrol(self, payload):
+        if payload != {"confirm": True, "product": "econtrol"}:
+            raise SafeError("Conferma esplicitamente l'installazione di e-Control.")
+        if not self.lock.acquire(blocking=False):
+            raise SafeError("Un'operazione e gia in corso.")
+        try:
+            if self.stopping:
+                raise SafeError("Avvio in arresto.")
+            if not self.registry()["configured"]:
+                raise SafeError("GHCR non configurato.")
+            if not self._installed():
+                raise SafeError("Installa prima Ekonex Installer.")
+            current = self._econtrol_installed()
+            if current:
+                self._record_econtrol("existing", version=str(current.get("version", "")))
+                return self.econtrol_status()
+            if self.econtrol_installation.get("state") in ("pending", "uncertain"):
+                raise SafeError("Installazione e-Control gia richiesta o da verificare; nessun secondo download avviato.")
+            catalog = self._econtrol_catalog()
+            self._record_econtrol("pending", since=time.time(), version=catalog["version"])
+            try:
+                result = self.transport.supervisor(ECONTROL_STORE_INSTALL, {"background": True})
+                job = result.get("job_id", "")
+                if job and not re.fullmatch(r"[a-fA-F0-9-]{32,36}", job):
+                    raise ValueError()
+                self._record_econtrol("pending", since=self.econtrol_installation["since"],
+                                      version=catalog["version"], job_id=job)
+            except Exception:
+                self._record_econtrol("uncertain", version=catalog["version"])
+            return self.econtrol_status()
+        finally:
+            self.lock.release()
+
+    def econtrol_status(self):
+        state = self.econtrol_installation["state"]
+        try:
+            installed = self._econtrol_installed()
+            if installed:
+                version = str(installed.get("version", ""))
+                expected = self.econtrol_installation.get("version", version)
+                self._record_econtrol("installed" if state == "pending" else "existing", version=version)
+                if expected and version != expected:
+                    self._record_econtrol("uncertain", version=expected)
+            elif state == "pending":
+                job_id = self.econtrol_installation.get("job_id")
+                jobs = self.transport.supervisor("/jobs/info").get("jobs", [])
+                def find(rows):
+                    for job in rows:
+                        if job.get("uuid") == job_id:
+                            return job
+                        child = find(job.get("child_jobs", []))
+                        if child:
+                            return child
+                job = find(jobs) if job_id else None
+                if job and job.get("done") is True:
+                    def errors(item):
+                        return bool(item.get("errors")) or any(errors(c) for c in item.get("child_jobs", []))
+                    self._record_econtrol("failed" if errors(job) else "uncertain",
+                                          version=self.econtrol_installation.get("version", ""))
+                elif not job and time.time() - self.econtrol_installation.get("since", 0) > 1800:
+                    self._record_econtrol("uncertain", version=self.econtrol_installation.get("version", ""))
+        except Exception:
+            pass
+        state = self.econtrol_installation["state"]
+        messages = {"idle": "e-Control non installato.",
+            "pending": "Download e installazione di e-Control in corso. Non ripetere la richiesta.",
+            "installed": "e-Control installato. Apri la scheda, avvialo e completa la configurazione.",
+            "existing": "e-Control e gia installato.",
+            "failed": "Installazione e-Control non riuscita. Controlla i log Supervisor.",
+            "uncertain": "Esito e-Control da verificare nello Store; nessun secondo download automatico."}
+        return {"state": state, "installed": state in ("installed", "existing"), "message": messages[state],
+                "can_install": state in ("idle", "failed")}
 
     def _installer_catalog(self):
         info = self.transport.supervisor(STORE_INFO)
@@ -379,7 +497,8 @@ def handler_for(app):
                 return self.send(200, (STATIC / name).read_bytes(), mime)
             if self.path == "/api/status":
                 try:
-                    return self.send(200, {"csrf": app.csrf, "registry": app.registry(), "installation": app.installation_status()})
+                    return self.send(200, {"csrf": app.csrf, "registry": app.registry(),
+                        "installation": app.installation_status(), "econtrol": app.econtrol_status()})
                 except Exception:
                     return self.send(503, {"error": "Impossibile leggere il registro Supervisor."})
             return self.send(404, {"error": "Pagina non trovata."})
@@ -399,7 +518,8 @@ def handler_for(app):
             except (ValueError, UnicodeError):
                 return self.send(400, {"error": "Richiesta non valida."})
             operation = {"/api/check": app.check, "/api/save": app.save,
-                         "/api/retry": app.retry_installation}.get(self.path)
+                         "/api/retry": app.retry_installation,
+                         "/api/install-econtrol": app.install_econtrol}.get(self.path)
             if operation is None:
                 return self.send(404, {"error": "Operazione non disponibile."})
             try:
@@ -448,7 +568,7 @@ def serve(server, app, stop_timeout=5):
 
 
 if __name__ == "__main__":
-    app = Setup(state_path="/data/setup-install.json")
+    app = Setup(state_path="/data/setup-install.json", econtrol_state_path="/data/setup-econtrol.json")
     server = ThreadingHTTPServer(("0.0.0.0", 8720), handler_for(app))
     server.daemon_threads = True
     raise SystemExit(serve(server, app))

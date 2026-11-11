@@ -1,5 +1,13 @@
 # Ekonex Installer - Avvio
 
+Aggiornamento Avvio0.1.0-test12: aggiunto il percorso per un Home Assistant
+vuoto. Dopo che Installer risulta installato compare il passo 4, con conferma
+separata, per installare e-Control direttamente dal catalogo corrente. Avvio
+verifica slug, repository, immagine e versione di catalogo; non avvia e-Control,
+non configura l'impianto e non installa altri prodotti. Il diario separato
+impedisce doppi download dopo risposte o riavvii incerti. Dopo l'installazione:
+aprire la scheda e-Control, avviarlo e completare da li la configurazione.
+
 Aggiornamento Avvio0.1.0-test11: rimosso il vincolo alla versione numerica
 dell'Installer. Avvio legge la versione corrente dal catalogo Supervisor e
 continua a verificare slug, repository, immagine autorizzata e manifest GHCR
@@ -22,7 +30,8 @@ con manutenzione esplicita, ma Avvio non abilita privilegi o migrazioni da solo.
 I riferimenti Test2 seguenti descrivono la prima distribuzione storica.
 
 Add-on pubblico di primo avvio: non richiede un token GHCR per installarsi.
-Contiene configurazione credenziali, guida e installazione del solo Installer; nessun codice
+Contiene configurazione credenziali, guida e installazione di Installer e, con
+conferma separata, della prima app e-Control; nessun codice
 degli add-on Ekonex privati o del loro trasferimento dati.
 
 1. Aggiungi https://github.com/edmondoalex/ekonex-apps al catalogo Home Assistant.
@@ -66,6 +75,7 @@ La lettura nativa non restituisce il vecchio segreto, quindi non e possibile
 promettere rollback automatico della credenziale precedente.
 
 Nessuna cancellazione o sostituzione automatica. Nessun token in chat, URL, screenshot o cartelle condivise.
-Accessi remoti solo HTTPS. Questa versione installa soltanto Installer, non migra
-ne installa/arresta gli altri prodotti. La protezione resta attiva.
+Accessi remoti solo HTTPS. Questa versione non migra dati e non avvia, arresta o
+configura i prodotti. Oltre a Installer puo installare soltanto e-Control, dopo
+una conferma amministrativa distinta. La protezione resta attiva.
 Puoi arrestare Avvio dopo la configurazione; non e necessario lasciarlo in esecuzione.
