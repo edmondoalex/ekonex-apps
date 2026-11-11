@@ -1,5 +1,12 @@
 # Ekonex Installer - Avvio
 
+Aggiornamento Avvio0.1.0-test11: rimosso il vincolo alla versione numerica
+dell'Installer. Avvio legge la versione corrente dal catalogo Supervisor e
+continua a verificare slug, repository, immagine autorizzata e manifest GHCR
+della stessa versione prima di installare. Le versioni future dell'Installer
+non richiedono quindi un nuovo Avvio. In caso di installazione fallita o incerta
+compare `Riprova installazione`, senza reinserire o sostituire il token.
+
 Aggiornamento corrente Avvio0.1.0-test10: destinazione Ekonex Installer0.1.0-test8
 se assente. Nome del migratore senza Test, stato Sperimentale invariato. Per le
 copie gia installate usare Aggiorna nella loro scheda, senza reinstallare.

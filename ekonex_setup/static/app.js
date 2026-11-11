@@ -7,6 +7,7 @@ function installation(value){
   $("next").hidden=value.state==="idle";
   $("installation").textContent=value.message;
   $("openInstaller").hidden=!value.installed;
+  $("retryInstall").hidden=!value.can_retry;
   if(value.state==="pending") installTimer=setTimeout(()=>status().catch(()=>{ $("installation").textContent="Connessione interrotta. Riapri questa pagina per controllare l'installazione."; }),3000);
 }
 const err=text=>{$("error").textContent=text;$("error").hidden=!text;};
@@ -31,5 +32,11 @@ $("save").addEventListener("click",async()=>{
   try{const r=await api("save",{username:$("username").value.trim(),token:$("token").value,confirm:$("confirm").checked,replace:$("replace").checked,expected_username:previousUser});$("result").textContent=r.message;$("next").hidden=false;}
   catch(e){err(e.message);$("result").textContent="Salvataggio non confermato. Controlla lo stato del registro prima di riprovare.";}
   finally{$("token").value="";verified=false;$("confirm").checked=false;$("replace").checked=false;try{await status();}catch{ready=false;err("Stato registro non disponibile. Non ripetere il salvataggio finché non è verificabile.");}busy=false;refresh();}
+});
+$("retryInstall").addEventListener("click",async()=>{
+  busy=true;err("");$("retryInstall").disabled=true;$("installation").textContent="Nuova installazione richiesta al Supervisor...";refresh();
+  try{const value=await api("retry",{confirm:true});installation(value);}
+  catch(e){err(e.message);try{await status();}catch{ready=false;}}
+  finally{busy=false;$("retryInstall").disabled=false;refresh();}
 });
 status().catch(e=>{err(e.message);refresh();});

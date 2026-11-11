@@ -1,4 +1,4 @@
-"""Public bootstrap: GHCR provisioning and fixed Installer download. No migration."""
+"""Public bootstrap: GHCR provisioning and verified Installer download. No migration."""
 import base64
 import json
 import os
@@ -15,8 +15,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 STATIC = Path(__file__).parent / "static"
 PACKAGE = "ekonex-installer"
-TAG = "0.1.0-test8"
 INSTALLER = "935e8182_ekonex_installer"
+INSTALLER_REPOSITORY = "935e8182"
+INSTALLER_IMAGE = "ghcr.io/edmondoalex/ekonex-installer"
 STORE_INFO = "/store/addons/" + INSTALLER + "/info"
 STORE_INSTALL = "/store/addons/" + INSTALLER + "/install"
 INSTALLED_PACKAGES = {
@@ -78,8 +79,8 @@ class Transport:
             "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json",
             "User-Agent": "Ekonex-Installer-Setup"})
 
-    def manifest(self, username, token, package=PACKAGE, tag=TAG):
-        if package not in [PACKAGE, *INSTALLED_PACKAGES.values()] or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", tag):
+    def manifest(self, username, token, package=PACKAGE, tag=None):
+        if package not in [PACKAGE, *INSTALLED_PACKAGES.values()] or not isinstance(tag, str) or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", tag):
             raise SafeError("Pacchetto da verificare non valido.")
         basic = base64.b64encode((username + ":" + token).encode()).decode()
         query = urllib.parse.urlencode({"service": "ghcr.io", "scope": "repository:edmondoalex/" + package + ":pull"})
@@ -131,17 +132,29 @@ class Setup:
             raise SafeError("Inventario non disponibile.")
         return any(isinstance(row, dict) and row.get("slug") == INSTALLER for row in rows)
 
-    def _begin_installation(self):
+    def _installer_catalog(self):
+        info = self.transport.supervisor(STORE_INFO)
+        version = info.get("version_latest")
+        image = info.get("image")
+        if (info.get("slug") != INSTALLER
+                or str(info.get("repository")) != INSTALLER_REPOSITORY
+                or info.get("available") is not True
+                or not isinstance(version, str)
+                or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", version)
+                or image not in (None, "", INSTALLER_IMAGE)):
+            raise SafeError("Catalogo Installer non autorizzato o non disponibile: aggiorna il catalogo.")
+        return {"version": version, "image": image or INSTALLER_IMAGE}
+
+    def _begin_installation(self, expected_version):
         # Called only after confirmed native registry save, while holding the lock.
         if self.installation["state"] in ("pending", "uncertain"):
             return
         if self._installed():
             self._record_installation("existing")
             return
-        info = self.transport.supervisor(STORE_INFO)
-        if (info.get("slug") != INSTALLER or info.get("repository") != "935e8182"
-                or info.get("version_latest") != TAG or info.get("available") is not True):
-            raise SafeError("Catalogo Installer non allineato: aggiorna il catalogo.")
+        catalog = self._installer_catalog()
+        if catalog["version"] != expected_version:
+            raise SafeError("Il catalogo Installer e cambiato durante la verifica: aggiorna e riprova.")
         # Durable intent before POST. An ambiguous response is never retried automatically.
         self._record_installation("pending", since=time.time())
         try:
@@ -152,6 +165,31 @@ class Setup:
             self._record_installation("pending", since=self.installation["since"], job_id=job)
         except Exception:
             self._record_installation("uncertain")
+
+    def retry_installation(self, payload):
+        if payload != {"confirm": True}:
+            raise SafeError("Conferma esplicitamente la nuova installazione.")
+        if not self.lock.acquire(blocking=False):
+            raise SafeError("Un'operazione e gia in corso.")
+        try:
+            if self.stopping:
+                raise SafeError("Avvio in arresto.")
+            if not self.registry()["configured"]:
+                raise SafeError("GHCR non configurato: verifica e salva prima la credenziale.")
+            if self._installed():
+                self._record_installation("existing")
+                return {"state": "existing", "installed": True, "can_retry": False,
+                        "message": "Ekonex Installer e gia installato."}
+            if self.installation.get("state") not in ("failed", "uncertain"):
+                raise SafeError("La riprova non e necessaria nello stato corrente.")
+            catalog = self._installer_catalog()
+            self._record_installation("idle")
+            self._begin_installation(catalog["version"])
+            return {"state": self.installation["state"], "installed": False,
+                    "can_retry": self.installation["state"] in ("failed", "uncertain"),
+                    "message": "Nuova installazione richiesta al Supervisor."}
+        finally:
+            self.lock.release()
 
     def installation_status(self):
         if not self.lock.acquire(blocking=False):
@@ -197,7 +235,8 @@ class Setup:
                 "failed": "Credenziale salvata, ma installazione non riuscita. Controlla i log Supervisor; gli altri add-on sono invariati.",
                 "uncertain": "Credenziale salvata. Esito installazione da verificare nella scheda Installer: non viene ripetuta automaticamente.",
             }
-            return {"state": state, "message": messages[state], "installed": state in ("installed", "existing")}
+            return {"state": state, "message": messages[state], "installed": state in ("installed", "existing"),
+                    "can_retry": state in ("failed", "uncertain")}
         finally:
             self.lock.release()
 
@@ -239,11 +278,12 @@ class Setup:
         package, _ = self.transport.github("/users/edmondoalex/packages/container/" + PACKAGE, token)
         if package.get("visibility") != "private":
             raise SafeError("Il pacchetto privato di prova non e verificabile.")
-        digest = self.transport.manifest(username, token)
+        catalog = self._installer_catalog()
+        digest = self.transport.manifest(username, token, PACKAGE, catalog["version"])
         rows = self.transport.supervisor("/addons").get("addons")
         if not isinstance(rows, list):
             raise SafeError("Inventario non leggibile: verifica degli altri pacchetti non possibile.")
-        checked = [PACKAGE + ":" + TAG]
+        checked = [PACKAGE + ":" + catalog["version"]]
         for row in rows:
             slug = str(row.get("slug", ""))
             short = slug.removeprefix("935e8182_")
@@ -254,7 +294,8 @@ class Setup:
             checked.append(product + ":" + version)
         return {"username": username, "manifest_verified": True, "digest": digest,
                 "expiration": headers.get("github-authentication-token-expiration"),
-                "package": PACKAGE + ":" + TAG, "packages_verified": checked}
+                "package": PACKAGE + ":" + catalog["version"], "installer_version": catalog["version"],
+                "packages_verified": checked}
 
     def check(self, payload):
         if not self.lock.acquire(blocking=False):
@@ -291,7 +332,7 @@ class Setup:
             except Exception:
                 raise SafeError("Esito salvataggio incerto. Controlla lo stato del registro prima di riprovare; nessuna credenziale e stata cancellata.") from None
             try:
-                self._begin_installation()
+                self._begin_installation(verified["installer_version"])
             except Exception:
                 # Never misreport a successful credential save as a failed save.
                 if self.installation["state"] not in ("pending", "uncertain"):
@@ -357,7 +398,8 @@ def handler_for(app):
                     raise ValueError()
             except (ValueError, UnicodeError):
                 return self.send(400, {"error": "Richiesta non valida."})
-            operation = {"/api/check": app.check, "/api/save": app.save}.get(self.path)
+            operation = {"/api/check": app.check, "/api/save": app.save,
+                         "/api/retry": app.retry_installation}.get(self.path)
             if operation is None:
                 return self.send(404, {"error": "Operazione non disponibile."})
             try:
