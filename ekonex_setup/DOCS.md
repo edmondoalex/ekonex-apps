@@ -79,3 +79,6 @@ Accessi remoti solo HTTPS. Questa versione non migra dati e non avvia, arresta o
 configura i prodotti. Oltre a Installer puo installare soltanto e-Control, dopo
 una conferma amministrativa distinta. La protezione resta attiva.
 Puoi arrestare Avvio dopo la configurazione; non e necessario lasciarlo in esecuzione.
+Da Avvio **0.1.0-test13**, anche se un'operazione non termina entro il breve tempo
+di chiusura, lo Stop volontario esce con codice 0 e non lascia la scheda in Errore;
+lo stato resta conservato e viene verificato al prossimo avvio.

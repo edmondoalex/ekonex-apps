@@ -561,8 +561,11 @@ def serve(server, app, stop_timeout=5):
         for sig, handler in previous.items():
             signal.signal(sig, handler)
     if not drained:
-        lifecycle_log("Operazione ancora attiva: verificare esito al prossimo avvio; uscita 1.")
-        return 1
+        lifecycle_log(
+            "Operazione ancora attiva: stato conservato per la verifica al prossimo avvio; "
+            "arresto volontario completato con uscita 0."
+        )
+        return 0
     lifecycle_log("Arresto completato correttamente; uscita 0.")
     return 0
 
