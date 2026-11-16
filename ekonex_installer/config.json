@@ -1,6 +1,6 @@
 {
   "name": "Ekonex Installer",
-  "version": "0.1.0-test74-dist127",
+  "version": "0.1.0-test74-dist128",
   "slug": "ekonex_installer",
   "description": "Gestione configurazione e migrazione Ekonex con verifica formati legacy, backup, ripresa e recupero.",
   "arch": [
